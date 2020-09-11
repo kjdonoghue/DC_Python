@@ -1,37 +1,37 @@
 # #Assignment 1 - Calculator
 
-first_number = input("Enter a number: ")
+first_number = int(input("Enter a number: "))
 action = input("Enter an operator (+, -, *, /): ")
-second_number = input("Enter a second number: ")
+second_number = int(input("Enter a second number: "))
 
 def calculator(num_one, operator, num_two):
     if operator == "+":
-        return int(num_one) + int(num_two)
+        return num_one + num_two
     elif operator == "-":
-        return int(num_one) - int(num_two)
+        return num_one - num_two
     elif operator == "*":
-        return int(num_one) * int(num_two)
+        return num_one * num_two
     elif operator == "/":
-        return int(num_one) / int(num_two)
+        return num_one / num_two
     else:
         return "please enter numbers and operator"
 
 answer = calculator(first_number, action, second_number)
 print(answer)
 
-#or if you want individual functions for each operation
+# or if you want individual functions for each operation
 
 def add(number1, number2):
-   return int(number1) + int(number2)  
+   return number1 + number2
 
 def sub(number1, number2):
-    return int(number1) - int(number2) 
+    return number1 - number2
 
 def mult(number1, number2):
-    return int(number1) * int(number2) 
+    return number1 * number2 
 
 def divide(number1, number2):
-    return int(number1) / int(number2) 
+    return number1 / number2 
     
 if action == "+":
     answer = add(first_number, second_number)
@@ -50,12 +50,12 @@ else:
 
 # #2 Even Odd
 
-your_number = input("Enter a number: ")
+your_number = int(input("Enter a number: "))
 
 def even_odd(number):
-    if int(number) % 2 == 0:
+    if (number % 2 == 0):
         return "Your number is even!"
-    elif int(number) % 2 != 0:
+    elif (number % 2 != 0):
         return "Your number is odd!"
     else:
         return "Please enter a whole number"
@@ -65,17 +65,20 @@ print(result)
 
 # #3 Write Fizz Buzz
 
-your_number = input("Enter a number: ")
+your_number = int(input("Enter a number: "))
 
 def fizz_buzz(number):
-    if (int(number) % 3 == 0) and (int(number) % 5 == 0):
-        return "Fizz Buzz"
-    elif int(number) % 3 == 0:
-        return "Fizz"
-    elif int(number) % 5 == 0:
-        return "Buzz"
+    answer = ""
+    if (number % 3 == 0) and (number % 5 == 0):
+        answer = "Fizz Buzz"
+    elif (number % 3) == 0:
+        answer = "Fizz"
+    elif (number % 5) == 0:
+        answer = "Buzz"
     else:
-        return "Your number is not divisible by 3 or 5"
+        answer = "Your number is not divisible by 3 or 5"
+
+    return answer
 
 this_answer = fizz_buzz(your_number)
 print(this_answer)    
