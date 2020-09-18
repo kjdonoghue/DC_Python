@@ -9,22 +9,19 @@ class PoolTable:
         self.start_time = None
         self.end_time = None
         self.total_time = None
-        self.customer_name = ""
+        self.customer_name = " "
         self.time_played = None
         self.cost = ""
 
-def show_tables(filter):
-    print("Index \tTable \t\tStatus \t\tCustomer Name") #Header
-    for i in range(0, len(pt_list)):
-        table = pt_list[i]
-        if table.is_occupied == True:
+    def show_tables(self, filter):
+        if self.is_occupied == True:
             status = "Occupied"
         else:
             status  = "Available"
         if filter == "All":
-            print(f"{i + 1}: \tTable {table.name} \t{status} \t{table.customer_name}")
+            print (f"{i + 1}: \tTable {self.name} \t{status} \t{self.customer_name}")
         elif table.is_occupied == filter:
-            print(f"{i + 1}: \tTable {table.name} \t{status} \t{table.customer_name}")
+            print (f"{i + 1}: \tTable {self.name} \t{status} \t{self.customer_name}")
 
 def select_table():
     pt_index = input("Enter Table Number: ")
@@ -38,8 +35,24 @@ def select_table():
     except ValueError:
         print("You must enter a number 1-12")
     except:
-        prnt("That is not a valid entry")
- 
+        print("That is not a valid entry")
+
+def print_current_status():
+    current_status = []         
+    for i in range(0, len(pt_list)):
+        table = pt_list[i]
+        start_time = str(table.start_time)
+        if table.is_occupied == True:
+            status = "Occupied"
+        else:
+            status = "Available"
+        table_status = {"Table Number": table.name, "Status": status, "Customer Name": table.customer_name, "Start Time": start_time, }
+        current_status.append(table_status)
+                                                    
+    with open("current_status.json", "w") as file_object:
+        json.dump(current_status, file_object)
+    
+    
 #LISTS
 pt_list = []
 all_transactions = []
@@ -53,21 +66,24 @@ for index in range(1,13):
     pool_table = PoolTable(index)
     pt_list.append(pool_table)
 
+
 #MAIN APPLICATION
 while True:
     print("""*****Pool Table Management Menu*****
     1: Sign Out Table
     2. Return Table
     3. View Status of All Tables
-    4. End of Day Reports/Procedures
-    5. Quit""")
+    4. Quit""")
     
     action = input("What would you like to do: ")
     
     #SIGN OUT POOL TABLE
     if action == "1": 
         print("Available Tables: ")
-        show_tables(False)
+        print("Index \tTable \t\tStatus \t\tCustomer Name") #Header
+        for i in range(0, len(pt_list)):
+            table = pt_list[i]
+            table.show_tables(False)
         
         #SELECT TABLE
         table = select_table()
@@ -79,17 +95,24 @@ while True:
                 table.customer_name = name.title()
                 start_time = datetime.datetime.now()
                 table.start_time = (start_time.replace(microsecond=0))
+                # table.start_time = start_time.strftime("%H:%M")
                 table.is_occupied = True
+                
                 print(f"Table number {table.name} is checked out to {table.customer_name}")
             else:
                 print(f"Table number {table.name} is not available")
-        else:
-            pass
         
+        #UPDATE CURRENT STATUS LIST
+        print_current_status()
+
     #RETURN POOL TABLE      
     elif action == "2": #return pool table
         print("Occupied Tables: ")
-        show_tables(True)
+        print("Index \tTable \t\tStatus \t\tCustomer Name") #Header
+        for i in range(0, len(pt_list)):
+            table = pt_list[i]
+            table.show_tables(True)
+        
     
         #SELECT TABLE
         table = select_table()
@@ -105,7 +128,7 @@ while True:
                 print(f"Total time played for Table {table.name}: {table.total_time}")
 
                 #CALCULATE COST
-                table.cost = round((time_in_sec/60.00), 2) * rate_minute #line 46
+                table.cost = round(((time_in_sec/60.00) * rate_minute), 2) #line 46
                 print(f"The cost is : ${table.cost}")          
                                 
                 #UPDATE TRANSACTION TO ARRAY
@@ -116,7 +139,7 @@ while True:
                 table_transaction = {"Table Number": table.name, "Start Time": start, "End Time": end, "Total Time Played": total, "Cost": table.cost}
                 all_transactions.append(table_transaction)
 
-                #NAME FILE
+                #NAME THE FILE
                 now = datetime.datetime.now()
                 today = now.strftime("%Y-%m-%d")
                 filename = today + ".json"
@@ -135,96 +158,26 @@ while True:
                 table.cost = ""
                 print(f"Table {table.name} is returned to inventory")
 
+                #UPDATE CURRENT STATUS LIST
+                print_current_status()
+
             else:
                 print(f"Table {table.name} is not currently occupied")
-        else:
-            pass
+       
 
     #VIEW ALL STATUS
     elif action == "3":
-        print("""***Pool Table Status***
-        1: View Status of Tables
-        2: Print Status of Tables""")
-        
-        view_print = input("What would you like to do: ")
-        
-        if view_print == "1":
-            show_tables("All")
-        
-        elif view_print == "2":
-            
-            current_status = []
-                
-            for i in range(0, len(pt_list)):
-                table = pt_list[i]
-                start_time = str(table.start_time)
-                if table.is_occupied == True:
-                    status = "Occupied"
-                else:
-                    status = "Available"
-                table_status = {"Table Number": table.name, "Status": status, "Customer Name": table.customer_name, "Start Time": start_time, }
-                current_status.append(table_status)
-                                                       
-            with open("current_status.json", "w") as file_object:
-                json.dump(current_status, file_object)
-        else:
-            print("That is not a valid option")
-    
-    elif action == "4":
-        print("""End of Day Procedures
-        1: Run End of Day Reports
-        2: End the Day
-        press q to exit""")
-        action = input("What would you like to do: ")
-        if action == "1":                
-            #TOTAL NUMBER OF TRANSACTIONS
-            transactions = len(all_transactions)
-
-            #TOTAL REVENUE
-            revenue = 0
-            for i in range (0,len(all_transactions)):
-                revenue += (all_transactions[i]["Cost"])
-
-            #AVERAGE REVENUE PER TRANSACTION
-            average = revenue/transactions
-
-            #APPEND TO LIST
-            end_of_day_totals = {"Transactions": transactions, "Total Revenue": revenue, "Average Revenue Per Transaction": average}
-            all_transactions.append(end_of_day_totals)
-
-            #NAME END OF DAY FILE
-            now = datetime.datetime.now()
-            today = now.strftime("%Y-%m-%d")
-            filename = today + "_final.json"
-                    
-            #PRINT TRANSACTIONS TO FILE (DAILY TOTALS AND ALL TRANSACTIONS)
-            with open(filename, "w") as file_object:
-                json.dump(all_transactions, file_object)
-
-            print("End of Day Totals")
-            print(end_of_day_totals)
-            
-        
-        elif action == "2":
-            print("***End of Day Procedures***")
-            print("Are You Certain You want to end the Day? This will delete all transaction information saved in the system.")
-            action = input("Enter Y to confirm, or q to return to the main menu: ")
-            if action == "y" or "Y":
-                all_transactions = []
-                print("The day has been ended") 
-            else:
-                print("that is not a valid option")
-        elif action == "q" or "Q":
-            break
-        else:
-            print("That is not a valid option")
-    
-
+        print("Table Status:")
+        print("Index \tTable \t\tStatus \t\tCustomer Name") #Header
+        for i in range(0, len(pt_list)):
+            table = pt_list[i]
+            table.show_tables("All")
+     
     #QUIT    
-    elif action == "5": #quit
+    elif action == "4":
         break
     else:
-        print("not valid")
+        print("Not a valid option")
 
 
 
