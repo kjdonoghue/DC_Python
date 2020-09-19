@@ -7,21 +7,29 @@ class PoolTable:
         self.name = name
         self.is_occupied = False
         self.start_time = None
+        self.start_str = None
         self.end_time = None
+        self.end_str = None
         self.total_time = None
-        self.customer_name = " "
+        self.total_str = None
+        self.customer_name = ""
         self.time_played = None
         self.cost = ""
 
     def show_tables(self, filter):
         if self.is_occupied == True:
             status = "Occupied"
+            current_time = datetime.datetime.now()
+            time = current_time - self.start_time
+            time_played = round((timedelta.total_seconds(time)/60),2)
         else:
             status  = "Available"
+            time_played = ""
+        
         if filter == "All":
-            print (f"{i + 1}: \tTable {self.name} \t{status} \t{self.customer_name}")
+            print (f"{i + 1}: \tTable {self.name} \t{status} \t{self.customer_name} \t\t{self.start_str} \t\t{time_played}")
         elif table.is_occupied == filter:
-            print (f"{i + 1}: \tTable {self.name} \t{status} \t{self.customer_name}")
+            print (f"{i + 1}: \tTable {self.name} \t{status} \t{self.customer_name} \t\t{self.start_str} \t\t{time_played}")
 
 def select_table():
     pt_index = input("Enter Table Number: ")
@@ -41,12 +49,11 @@ def print_current_status():
     current_status = []         
     for i in range(0, len(pt_list)):
         table = pt_list[i]
-        start_time = str(table.start_time)
         if table.is_occupied == True:
             status = "Occupied"
         else:
             status = "Available"
-        table_status = {"Table Number": table.name, "Status": status, "Customer Name": table.customer_name, "Start Time": start_time, }
+        table_status = {"Table Number": table.name, "Status": status, "Customer Name": table.customer_name, "Start Time": table.start_str}
         current_status.append(table_status)
                                                     
     with open("current_status.json", "w") as file_object:
@@ -58,7 +65,6 @@ pt_list = []
 all_transactions = []
 
 #RATES
-rate_hour = 30
 rate_minute = .50
 
 #MAKE POOL TABLES
@@ -80,7 +86,7 @@ while True:
     #SIGN OUT POOL TABLE
     if action == "1": 
         print("Available Tables: ")
-        print("Index \tTable \t\tStatus \t\tCustomer Name") #Header
+        print("Index \tTable \t\tStatus \t\tName") #Header
         for i in range(0, len(pt_list)):
             table = pt_list[i]
             table.show_tables(False)
@@ -91,11 +97,9 @@ while True:
         #CHECK OUT TABLE
         if table != None:
             if table.is_occupied == False:
-                name = input("Customer's Name: ")
-                table.customer_name = name.title()
-                start_time = datetime.datetime.now()
-                table.start_time = (start_time.replace(microsecond=0))
-                # table.start_time = start_time.strftime("%H:%M")
+                table.customer_name = input("Customer's Name: ").title()
+                table.start_time = datetime.datetime.now()
+                table.start_str = table.start_time.strftime("%H:%M")
                 table.is_occupied = True
                 
                 print(f"Table number {table.name} is checked out to {table.customer_name}")
@@ -108,7 +112,7 @@ while True:
     #RETURN POOL TABLE      
     elif action == "2": #return pool table
         print("Occupied Tables: ")
-        print("Index \tTable \t\tStatus \t\tCustomer Name") #Header
+        print("Index \tTable \t\tStatus \t\tName \t\tStart \t\tMinutes Played") #Header
         for i in range(0, len(pt_list)):
             table = pt_list[i]
             table.show_tables(True)
@@ -121,22 +125,19 @@ while True:
             if (table.is_occupied == True):
 
                 #CALCULATE TIME
-                end_time = datetime.datetime.now()
-                table.end_time = end_time.replace(microsecond=0)
+                table.end_time = datetime.datetime.now()
+                table.end_str = table.end_time.strftime("%H:%M")
                 table.total_time = table.end_time - table.start_time
+                table.total_str = str(table.total_time)
                 time_in_sec = timedelta.total_seconds(table.total_time)
-                print(f"Total time played for Table {table.name}: {table.total_time}")
+                print(f"Total time played for Table {table.name}: {table.total_str}")
 
                 #CALCULATE COST
-                table.cost = round(((time_in_sec/60.00) * rate_minute), 2) #line 46
+                table.cost = round(((time_in_sec/60.00) * rate_minute), 2)
                 print(f"The cost is : ${table.cost}")          
                                 
                 #UPDATE TRANSACTION TO ARRAY
-                start = str(table.start_time)
-                end = str(table.end_time)
-                total = str(table.total_time)
-
-                table_transaction = {"Table Number": table.name, "Start Time": start, "End Time": end, "Total Time Played": total, "Cost": table.cost}
+                table_transaction = {"Table Number": table.name, "Start Time": table.start_str, "End Time": table.end_str, "Total Time Played": table.total_str, "Cost": table.cost}
                 all_transactions.append(table_transaction)
 
                 #NAME THE FILE
@@ -168,7 +169,7 @@ while True:
     #VIEW ALL STATUS
     elif action == "3":
         print("Table Status:")
-        print("Index \tTable \t\tStatus \t\tCustomer Name") #Header
+        print("Index \tTable \t\tStatus \t\tName \t\tStart \t\tMinutes Played") #Header
         for i in range(0, len(pt_list)):
             table = pt_list[i]
             table.show_tables("All")
